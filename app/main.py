@@ -1,5 +1,6 @@
 """FastAPI app principal"""
 
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
@@ -7,16 +8,29 @@ from app.database import Database
 from app.routes import auth
 from app.utils.logger import setup_logger
 from datetime import datetime
+import os
 
 # Setup
 settings = get_settings()
 logger = setup_logger()
 
 # App
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await Database.connect()
+    logger.info("AuthService iniciado")
+    try:
+        yield
+    finally:
+        await Database.disconnect()
+        logger.info("AuthService detenido")
+
+
 app = FastAPI(
     title="AuthService",
     description="Sistema centralizado de autenticación",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS
@@ -30,17 +44,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Eventos
-@app.on_event("startup")
-async def startup():
-    await Database.connect()
-    logger.info("AuthService iniciado")
-
-@app.on_event("shutdown")
-async def shutdown():
-    await Database.disconnect()
-    logger.info("AuthService detenido")
 
 # Routers
 app.include_router(auth.router)
@@ -66,9 +69,10 @@ async def health():
     return {
         "status": "healthy" if db_status == "connected" else "unhealthy",
         "database": db_status,
-        "timestamp": datetime.utcnow().isoformat()
+        "timestamp": datetime.now(datetime.timezone.utc).isoformat()
     }
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8003))
+    uvicorn.run(app, host="0.0.0.0", port=port)
