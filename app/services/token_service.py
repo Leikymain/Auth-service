@@ -14,8 +14,8 @@ class TokenService:
             "access_token": generate_token(),
             "requests_left": settings.initial_requests,
             "expires_at": (
-                datetime.now(timezone.utc) + timedelta(days=settings.token_validity_days)
-            ).isoformat()
+                datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=settings.token_validity_days)
+            ).replace(microsecond=0).isoformat()
         }
     
     @staticmethod
@@ -23,7 +23,7 @@ class TokenService:
         """Verifica validez de token"""
         expires = datetime.fromisoformat(expires_at)
         
-        if datetime.now(timezone.utc) > expires:
+        if datetime.now(timezone.utc).replace(microsecond=0) > expires:
             return False, "Token expired"
         
         if requests_left <= 0:
