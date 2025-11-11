@@ -5,7 +5,7 @@ from app.models.user import UserInDB
 from app.utils.password import hash_password, verify_password, generate_secure_password
 from app.services.email_service import EmailService
 from app.services.token_service import TokenService
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)

@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 class UserInDB(BaseModel):
     email: EmailStr
