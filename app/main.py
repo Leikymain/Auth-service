@@ -7,7 +7,7 @@ from app.config import get_settings
 from app.database import Database
 from app.routes import auth
 from app.utils.logger import setup_logger
-import datetime
+from datetime import datetime, timezone
 import os
 
 # Setup
