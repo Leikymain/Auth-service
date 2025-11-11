@@ -8,11 +8,13 @@ from app.database import Database
 from app.routes import auth
 from app.utils.logger import setup_logger
 from datetime import datetime, timezone
+import pytz
 import os
 
 # Setup
 settings = get_settings()
 logger = setup_logger()
+spain_tz = pytz.timezone("Europe/Madrid")
 
 # App
 @asynccontextmanager
@@ -69,7 +71,7 @@ async def health():
     return {
         "status": "healthy" if db_status == "connected" else "unhealthy",
         "database": db_status,
-        "timestamp": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+        "timestamp": datetime.now(spain_tz).replace(microsecond=0).isoformat()
     }
 
 if __name__ == "__main__":

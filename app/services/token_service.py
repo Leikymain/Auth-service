@@ -3,8 +3,10 @@
 from datetime import datetime, timedelta, timezone
 from app.config import get_settings
 from app.utils.password import generate_token
+import pytz
 
 settings = get_settings()
+spain_tz = pytz.timezone("Europe/Madrid")
 
 class TokenService:
     @staticmethod
@@ -14,7 +16,7 @@ class TokenService:
             "access_token": generate_token(),
             "requests_left": settings.initial_requests,
             "expires_at": (
-                datetime.now(timezone.utc).replace(microsecond=0) + timedelta(days=settings.token_validity_days)
+                datetime.now(spain_tz).replace(microsecond=0) + timedelta(days=settings.token_validity_days)
             ).replace(microsecond=0).isoformat()
         }
     
@@ -23,7 +25,7 @@ class TokenService:
         """Verifica validez de token"""
         expires = datetime.fromisoformat(expires_at)
         
-        if datetime.now(timezone.utc).replace(microsecond=0) > expires:
+        if datetime.now(spain_tz).replace(microsecond=0) > expires:
             return False, "Token expired"
         
         if requests_left <= 0:

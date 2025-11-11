@@ -6,9 +6,11 @@ from app.utils.password import hash_password, verify_password, generate_secure_p
 from app.services.email_service import EmailService
 from app.services.token_service import TokenService
 from datetime import datetime, timezone
+import pytz
 import logging
 
 logger = logging.getLogger(__name__)
+spain_tz = pytz.timezone("Europe/Madrid")
 
 class AuthService:
     @staticmethod
@@ -35,7 +37,7 @@ class AuthService:
             "access_token": None,
             "requests_left": 0,
             "expires_at": None,
-            "created_at": datetime.now(timezone.utc).replace(microsecond=0).isoformat()
+            "created_at": datetime.now(spain_tz).replace(microsecond=0).isoformat()
         }
         
         await db.users.insert_one(user_data)
