@@ -69,7 +69,7 @@ async def health():
     return {
         "status": "healthy" if db_status == "connected" else "unhealthy",
         "database": db_status,
-        "timestamp": datetime.now(datetime.timezone.utc).isoformat()
+        "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
 if __name__ == "__main__":

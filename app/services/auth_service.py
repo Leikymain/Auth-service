@@ -35,7 +35,7 @@ class AuthService:
             "access_token": None,
             "requests_left": 0,
             "expires_at": None,
-            "created_at": datetime.now(datetime.timezone.utc).isoformat()
+            "created_at": datetime.now(timezone.utc).isoformat()
         }
         
         await db.users.insert_one(user_data)
