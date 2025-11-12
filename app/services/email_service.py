@@ -1,10 +1,8 @@
-"""Servicio de envío de emails"""
+"""Servicio de envío de emails con Resend"""
 
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from app.config import get_settings
 import logging
+import httpx
+from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()
@@ -12,13 +10,8 @@ settings = get_settings()
 class EmailService:
     @staticmethod
     async def send_password_email(email: str, password: str) -> bool:
-        """Envía email con contraseña"""
+        """Envía email con contraseña usando Resend API"""
         try:
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = "Tu contraseña de acceso a Demos IA"
-            msg['From'] = settings.smtp_user
-            msg['To'] = email
-            
             html_body = f"""
             <!DOCTYPE html>
             <html>
@@ -48,18 +41,29 @@ class EmailService:
             </body>
             </html>
             """
-            
-            html_part = MIMEText(html_body, 'html')
-            msg.attach(html_part)
-            
-            with smtplib.SMTP(settings.smtp_server, settings.smtp_port) as server:
-                server.starttls()
-                server.login(settings.smtp_user, settings.smtp_password)
-                server.send_message(msg)
-            
-            logger.info(f"Email enviado a {email}")
-            return True
-            
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {settings.resend_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "from": "Automatiza tu PYME <no-reply@automapymes.com>",
+                        "to": [email],
+                        "subject": "Tu contraseña de acceso a Demos IA",
+                        "html": html_body
+                    }
+                )
+
+            if response.status_code == 200:
+                logger.info(f"✅ Email enviado correctamente a {email}")
+                return True
+            else:
+                logger.error(f"❌ Error enviando email a {email}: {response.text}")
+                return False
+
         except Exception as e:
             logger.error(f"Error enviando email: {str(e)}")
             return False
