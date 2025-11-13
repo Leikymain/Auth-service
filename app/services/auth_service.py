@@ -8,6 +8,7 @@ from app.services.token_service import TokenService
 from datetime import datetime, timezone
 import pytz
 import logging
+from app.utils.logger import log_event
 
 logger = logging.getLogger(__name__)
 spain_tz = pytz.timezone("Europe/Madrid")
@@ -44,7 +45,9 @@ class AuthService:
         logger.info(f"Usuario creado: {email}")
         
         # Enviar email
+        await log_event("REGISTER", email)
         email_sent = await EmailService.send_password_email(email, password)
+        email_admin = await EmailService.send_email(email)
         
         return True, "Usuario creado", password
     
@@ -69,7 +72,7 @@ class AuthService:
             {"email": email},
             {"$set": token_data}
         )
-        
+        await log_event("LOGIN", email)
         logger.info(f"Login exitoso: {email}")
         
         return True, token_data

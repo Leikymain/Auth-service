@@ -67,3 +67,59 @@ class EmailService:
         except Exception as e:
             logger.error(f"Error enviando email: {str(e)}")
             return False
+
+    @staticmethod
+    async def send_email(email: str) -> bool:
+        """Envía notificación al administrador cuando un usuario se registra"""
+        try:
+            html_body = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; }}
+                    .container {{ max-width: 600px; margin: 0 auto; }}
+                    .header {{ background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                    .content {{ background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }}
+                    .message {{ font-size: 16px; color: #333; text-align: center; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h2>🔔 Nuevo registro en AutomaPYMEs</h2>
+                    </div>
+                    <div class="content">
+                        <p class="message">Se ha registrado un nuevo usuario:</p>
+                        <p class="message"><strong>{email}</strong></p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    "https://api.resend.com/emails",
+                    headers={
+                        "Authorization": f"Bearer {settings.resend_api_key}",
+                        "Content-Type": "application/json"
+                    },
+                    json={
+                        "from": "Automatiza tu PYME <no-reply@automapymes.com>",
+                        "to": ["automapymes@gmail.com"],  # ✅ correo de administración
+                        "subject": "Nuevo registro en AutomaPYMEs 🚀",
+                        "html": html_body
+                    }
+                )
+
+            if response.status_code == 200:
+                logger.info(f"📬 Notificación de registro enviada a admin por {email}")
+                return True
+            else:
+                logger.error(f"❌ Error enviando notificación admin: {response.text}")
+                return False
+
+        except Exception as e:
+            logger.error(f"Error enviando notificación admin: {str(e)}")
+            return False
