@@ -46,7 +46,7 @@ async def login(request: LoginRequest):
     return TokenResponse(
         access_token=token_data["access_token"],
         requests_available=token_data["requests_left"],
-        expires_in_days=token_data["expires_at"]
+        expires_at=token_data["expires_at"]
     )
 
 @router.post("/verify-token", response_model=VerifyResponse)

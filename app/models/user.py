@@ -25,7 +25,7 @@ class VerifyTokenRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     requests_available: int
-    expires_in_days: int
+    expires_at: str
 
 class StatsResponse(BaseModel):
     email: str
