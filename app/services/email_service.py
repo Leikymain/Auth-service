@@ -113,7 +113,7 @@ class EmailService:
                     }
                 )
 
-            if response.status_code == 200:
+            if response.status_code in (200, 201):
                 logger.info(f"📬 Notificación de registro enviada a admin por {email}")
                 return True
             else:
